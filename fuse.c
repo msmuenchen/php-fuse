@@ -1761,8 +1761,6 @@ PHP_FUSE_API int php_fuse_opt_parse_proc(void* data, const char* arg, int key, s
 	//step 2: call userland
 	zval** args[5], *retval_ptr;
 
-	ALLOC_INIT_ZVAL(retval_ptr);	
-
 	args[0]=&arg_data;
 	args[1]=&arg_arg;
 	args[2]=&arg_key;
@@ -1807,6 +1805,7 @@ PHP_FUSE_API int php_fuse_opt_parse_proc(void* data, const char* arg, int key, s
 	
 	if(retval_ptr)
 		zval_ptr_dtor(&retval_ptr);
+
 	zval_ptr_dtor(&arg_data);
 	zval_ptr_dtor(&arg_arg);
 	zval_ptr_dtor(&arg_key);
@@ -1900,12 +1899,15 @@ static PHP_METHOD(Fuse, opt_parse) {
 	fopts[i].templ=NULL;
 	fopts[i].offset=0;
 	fopts[i].value=0;
-
-	int ret=fuse_opt_parse(&fargs,NULL,fopts,php_fuse_opt_parse_proc);
-	if(ret==-1)
+	
+	int ret = fuse_opt_parse(&fargs,NULL,NULL,php_fuse_opt_parse_proc);
+	if(ret==-1) {
 		php_error(E_ERROR,"Fuse.opt_parse: fuse_opt_parse returned error");
+	} else {
+		php_printf("Fuse.opt_parse: returned from fuse_opt_parse, fargs is now %d\n",fargs.argc);
+	}
 
-	php_printf("Fuse.opt_parse: returned from fuse_opt_parse, fargs is now %d\n",fargs.argc);
+	struct _fopt { char *option; };	
 	
 	//copy over to zval $av
 	zend_hash_clean(av_hash);
