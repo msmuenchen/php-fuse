@@ -36,9 +36,9 @@ zend_module_entry fuse_module_entry = {
 	"fuse",
 	fuse_functions,
 	PHP_MINIT(fuse),     /* Replace with NULL if there is nothing to do at php startup   */ 
-	PHP_MSHUTDOWN(fuse), /* Replace with NULL if there is nothing to do at php shutdown  */
+	NULL,
 	PHP_RINIT(fuse),     /* Replace with NULL if there is nothing to do at request start */
-	PHP_RSHUTDOWN(fuse), /* Replace with NULL if there is nothing to do at request end   */
+	NULL,
 	PHP_MINFO(fuse),
 	"0.9.2", 
 	STANDARD_MODULE_PROPERTIES
@@ -151,12 +151,12 @@ PHP_FUSE_API int php_fuse_getattr(const char * path, struct stat * st) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -184,14 +184,14 @@ PHP_FUSE_API int php_fuse_getattr(const char * path, struct stat * st) {
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_st);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 
 	/* reference retval handling */
 	if (Z_TYPE_P(arg_st) != IS_ARRAY) {
 		zval_ptr_dtor(&arg_st);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -285,7 +285,7 @@ PHP_FUSE_API int php_fuse_getattr(const char * path, struct stat * st) {
 
 	zval_ptr_dtor(&arg_st);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -294,11 +294,11 @@ PHP_FUSE_API int php_fuse_readlink(const char * path, char * buf, size_t buf_len
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -323,7 +323,7 @@ PHP_FUSE_API int php_fuse_readlink(const char * path, char * buf, size_t buf_len
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_buf);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 
@@ -331,7 +331,7 @@ PHP_FUSE_API int php_fuse_readlink(const char * path, char * buf, size_t buf_len
 	strncpy(buf, Z_STRVAL_P(arg_buf), buf_len);
 	zval_ptr_dtor(&arg_buf);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -340,11 +340,11 @@ PHP_FUSE_API int php_fuse_getdir(const char * path, fuse_dirh_t dh, fuse_dirfil_
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 		
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -370,14 +370,14 @@ PHP_FUSE_API int php_fuse_getdir(const char * path, fuse_dirh_t dh, fuse_dirfil_
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_list);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 
 	/* reference retval handling */
 	if (Z_TYPE_P(arg_list) != IS_ARRAY) {
 		zval_ptr_dtor(&arg_list);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -414,7 +414,7 @@ PHP_FUSE_API int php_fuse_getdir(const char * path, fuse_dirh_t dh, fuse_dirfil_
 	}
 	zval_ptr_dtor(&arg_list);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -423,11 +423,11 @@ PHP_FUSE_API int php_fuse_mknod(const char * path, mode_t mode, dev_t dev) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EINVAL;
 	}
 
@@ -457,7 +457,7 @@ PHP_FUSE_API int php_fuse_mknod(const char * path, mode_t mode, dev_t dev) {
 	zval_ptr_dtor(&arg_mode);
 	zval_ptr_dtor(&arg_dev);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	return r;
 }
 
@@ -465,11 +465,11 @@ PHP_FUSE_API int php_fuse_mkdir(const char * path, mode_t mode) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -494,7 +494,7 @@ PHP_FUSE_API int php_fuse_mkdir(const char * path, mode_t mode) {
 	zval_ptr_dtor(&arg_path);
 	zval_ptr_dtor(&arg_mode);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -503,11 +503,11 @@ PHP_FUSE_API int php_fuse_unlink(const char * path) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -527,7 +527,7 @@ PHP_FUSE_API int php_fuse_unlink(const char * path) {
 
 	zval_ptr_dtor(&arg_path);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -536,11 +536,11 @@ PHP_FUSE_API int php_fuse_rmdir(const char * path) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -560,7 +560,7 @@ PHP_FUSE_API int php_fuse_rmdir(const char * path) {
 
 	zval_ptr_dtor(&arg_path);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -569,11 +569,11 @@ PHP_FUSE_API int php_fuse_symlink(const char * path_from, const char * path_to) 
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -599,7 +599,7 @@ PHP_FUSE_API int php_fuse_symlink(const char * path_from, const char * path_to) 
 	zval_ptr_dtor(&arg_path_from);
 	zval_ptr_dtor(&arg_path_to);
 	
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -608,11 +608,11 @@ PHP_FUSE_API int php_fuse_rename(const char * path_from, const char * path_to) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -638,7 +638,7 @@ PHP_FUSE_API int php_fuse_rename(const char * path_from, const char * path_to) {
 	zval_ptr_dtor(&arg_path_from);
 	zval_ptr_dtor(&arg_path_to);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -647,11 +647,11 @@ PHP_FUSE_API int php_fuse_link(const char * path_from, const char * path_to) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -677,7 +677,7 @@ PHP_FUSE_API int php_fuse_link(const char * path_from, const char * path_to) {
 	zval_ptr_dtor(&arg_path_from);
 	zval_ptr_dtor(&arg_path_to);
 	
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -686,11 +686,11 @@ PHP_FUSE_API int php_fuse_chmod(const char * path, mode_t mode) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -715,7 +715,7 @@ PHP_FUSE_API int php_fuse_chmod(const char * path, mode_t mode) {
 	zval_ptr_dtor(&arg_path);
 	zval_ptr_dtor(&arg_mode);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -724,11 +724,11 @@ PHP_FUSE_API int php_fuse_chown(const char * path, uid_t uid, gid_t gid) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -758,7 +758,7 @@ PHP_FUSE_API int php_fuse_chown(const char * path, uid_t uid, gid_t gid) {
 	zval_ptr_dtor(&arg_uid);
 	zval_ptr_dtor(&arg_gid);
 	
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -768,11 +768,11 @@ PHP_FUSE_API int php_fuse_truncate(const char * path, off_t offset) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -797,7 +797,7 @@ PHP_FUSE_API int php_fuse_truncate(const char * path, off_t offset) {
 	zval_ptr_dtor(&arg_path);
 	zval_ptr_dtor(&arg_offset);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -806,11 +806,11 @@ PHP_FUSE_API int php_fuse_utime(const char * path, struct utimbuf * buf) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -840,7 +840,7 @@ PHP_FUSE_API int php_fuse_utime(const char * path, struct utimbuf * buf) {
 	zval_ptr_dtor(&arg_atime);
 	zval_ptr_dtor(&arg_mtime);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -849,11 +849,11 @@ PHP_FUSE_API int php_fuse_open(const char * path, struct fuse_file_info * fi) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -882,7 +882,7 @@ PHP_FUSE_API int php_fuse_open(const char * path, struct fuse_file_info * fi) {
 	zval_ptr_dtor(&arg_path);
 	zval_ptr_dtor(&arg_mode);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r >= 0 ? 0 : r;
 }
@@ -891,11 +891,11 @@ PHP_FUSE_API int php_fuse_read(const char * path, char * buf, size_t buf_len, of
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EBADF;
 	}
 
@@ -937,13 +937,13 @@ PHP_FUSE_API int php_fuse_read(const char * path, char * buf, size_t buf_len, of
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_buf);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 	convert_to_string_ex(&arg_buf);
 	if (Z_STRVAL_P(arg_buf) == NULL) {
 		zval_ptr_dtor(&arg_buf);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return 0;
 	}
 
@@ -951,7 +951,7 @@ PHP_FUSE_API int php_fuse_read(const char * path, char * buf, size_t buf_len, of
 	memcpy(buf, Z_STRVAL_P(arg_buf), r > buf_len ? buf_len : r);
 	zval_ptr_dtor(&arg_buf);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r > buf_len ? buf_len : r;
 }
@@ -960,11 +960,11 @@ PHP_FUSE_API int php_fuse_write(const char * path, const char * buf, size_t buf_
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EBADF;
 	}
 
@@ -1008,7 +1008,7 @@ PHP_FUSE_API int php_fuse_write(const char * path, const char * buf, size_t buf_
 	zval_ptr_dtor(&arg_offset);
 	zval_ptr_dtor(&arg_buf);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1017,11 +1017,11 @@ PHP_FUSE_API int php_fuse_statfs(const char * path, struct statfs * st) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EFAULT;
 	}
 
@@ -1049,14 +1049,14 @@ PHP_FUSE_API int php_fuse_statfs(const char * path, struct statfs * st) {
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_st);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 
 	/* reference retval handling */
 	if (Z_TYPE_P(arg_st) != IS_ARRAY) {
 		zval_ptr_dtor(&arg_st);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EFAULT;
 	}
 
@@ -1101,7 +1101,7 @@ PHP_FUSE_API int php_fuse_statfs(const char * path, struct statfs * st) {
 
 	zval_ptr_dtor(&arg_st);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1110,11 +1110,11 @@ PHP_FUSE_API int php_fuse_flush(const char * path, struct fuse_file_info * fi) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EBADF;
 	}
 
@@ -1139,7 +1139,7 @@ PHP_FUSE_API int php_fuse_flush(const char * path, struct fuse_file_info * fi) {
 	zval_ptr_dtor(&arg_path);
 	zval_ptr_dtor(&arg_fh);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1148,11 +1148,11 @@ PHP_FUSE_API int php_fuse_release(const char * path, struct fuse_file_info * fi)
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -1177,7 +1177,7 @@ PHP_FUSE_API int php_fuse_release(const char * path, struct fuse_file_info * fi)
 	zval_ptr_dtor(&arg_path);
 	zval_ptr_dtor(&arg_fh);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1186,11 +1186,11 @@ PHP_FUSE_API int php_fuse_fsync(const char * path, int mode, struct fuse_file_in
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -EBADF;
 	}
 
@@ -1220,7 +1220,7 @@ PHP_FUSE_API int php_fuse_fsync(const char * path, int mode, struct fuse_file_in
 	zval_ptr_dtor(&arg_fh);
 	zval_ptr_dtor(&arg_mode);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1229,11 +1229,11 @@ PHP_FUSE_API int php_fuse_setxattr(const char * path, const char * name, const c
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOSPC;
 	}
 
@@ -1271,7 +1271,7 @@ PHP_FUSE_API int php_fuse_setxattr(const char * path, const char * name, const c
 	zval_ptr_dtor(&arg_value);
 	zval_ptr_dtor(&arg_mode);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1280,11 +1280,11 @@ PHP_FUSE_API int php_fuse_getxattr(const char * path, const char * name, char * 
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -1315,7 +1315,7 @@ PHP_FUSE_API int php_fuse_getxattr(const char * path, const char * name, char * 
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_value);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 
@@ -1323,7 +1323,7 @@ PHP_FUSE_API int php_fuse_getxattr(const char * path, const char * name, char * 
 	memcpy(value, Z_STRVAL_P(arg_value), r > value_len ? value_len : r);
 	zval_ptr_dtor(&arg_value);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r > value_len ? value_len : r;
 }
@@ -1332,11 +1332,11 @@ PHP_FUSE_API int php_fuse_listxattr(const char * path, char * list, size_t list_
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -1362,7 +1362,7 @@ PHP_FUSE_API int php_fuse_listxattr(const char * path, char * list, size_t list_
 
 	if (r < 0) {
 		zval_ptr_dtor(&arg_list);
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return r;
 	}
 
@@ -1393,7 +1393,7 @@ PHP_FUSE_API int php_fuse_listxattr(const char * path, char * list, size_t list_
 		}
 	}
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1402,11 +1402,11 @@ PHP_FUSE_API int php_fuse_removexattr(const char * path, const char * name) {
 	
 	zval *active_object = NULL;
 	
-	pthread_mutex_lock(&m);
+	pthread_mutex_lock(&FUSEG(m));
 	
 	active_object = FUSEG(active_object);
 	if (active_object == NULL) {
-		pthread_mutex_unlock(&m);
+		pthread_mutex_unlock(&FUSEG(m));
 		return -ENOENT;
 	}
 
@@ -1431,7 +1431,7 @@ PHP_FUSE_API int php_fuse_removexattr(const char * path, const char * name) {
 
 	zval_ptr_dtor(&arg_name);
 
-	pthread_mutex_unlock(&m);
+	pthread_mutex_unlock(&FUSEG(m));
 	
 	return r;
 }
@@ -1759,6 +1759,9 @@ PHP_FUSE_API int php_fuse_opt_parse_proc(void* data, const char* arg, int key, s
 */
 	//step 2: call userland
 	zval** args[5], *retval_ptr;
+
+	ALLOC_INIT_ZVAL(retval_ptr);	
+
 	args[0]=&arg_data;
 	args[1]=&arg_arg;
 	args[2]=&arg_key;
@@ -1869,10 +1872,10 @@ static PHP_METHOD(Fuse, opt_parse) {
 	int ret=fuse_opt_parse(&fargs,NULL,NULL,php_fuse_opt_parse_proc);
 	if(ret==-1)
 		php_error(E_ERROR,"Fuse.opt_parse: fuse_opt_parse returned error");
-	
 	php_printf("Fuse.opt_parse: returned from fuse_opt_parse, fargs is now %d\n",fargs.argc);
 	for(i=0;i<fargs.argc;i++)
 		php_printf("'%s'\n",fargs.argv[i]);
+	safe_efree(av_c);
 	return;
 }
 
@@ -2039,10 +2042,17 @@ zend_function_entry php_fuse_methods[] = {
 };
 /* }}} */
 
+static php_fuse_globals_ctor(zend_fuse_globals *globals TSRMLS_DC) {
+	pthread_mutex_init(&globals->m, NULL);
+}
+
+static php_fuse_globals_dtor(zend_fuse_globals *globals TSRMLS_DC) {
+	pthread_mutex_destroy(&globals->m);
+}
+
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(fuse) {
 	zend_class_entry ce;
-	pthread_mutexattr_t mutexattr;
 
 	INIT_CLASS_ENTRY(ce, "Fuse", php_fuse_methods); 
 	php_fuse_ce = zend_register_internal_class(&ce TSRMLS_CC);
@@ -2134,18 +2144,9 @@ PHP_MINIT_FUNCTION(fuse) {
 
 	REGISTER_LONG_CONSTANT("FUSE_XATTR_CREATE", XATTR_CREATE, CONST_CS | CONST_PERSISTENT);
 	REGISTER_LONG_CONSTANT("FUSE_XATTR_REPLACE", XATTR_REPLACE, CONST_CS | CONST_PERSISTENT);
-
-	pthread_mutexattr_settype( &mutexattr, PTHREAD_MUTEX_NORMAL);
-	pthread_mutex_init(&m, &mutexattr);
 	
+	ZEND_INIT_MODULE_GLOBALS(fuse, php_fuse_globals_ctor, php_fuse_globals_dtor);
 	
-	return SUCCESS;
-}
-/* }}} */
-
-/* {{{ PHP_MSHUTDOWN_FUNCTION */
-PHP_MSHUTDOWN_FUNCTION(fuse) {
-	pthread_mutex_destroy(&m);
 	return SUCCESS;
 }
 /* }}} */
@@ -2154,12 +2155,6 @@ PHP_MSHUTDOWN_FUNCTION(fuse) {
 PHP_RINIT_FUNCTION(fuse) {
 	FUSEG(active_object) = NULL;
 
-	return SUCCESS;
-}
-/* }}} */
-
-/* {{{ PHP_RSHUTDOWN_FUNCTION */
-PHP_RSHUTDOWN_FUNCTION(fuse) {
 	return SUCCESS;
 }
 /* }}} */

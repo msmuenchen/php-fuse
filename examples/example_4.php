@@ -1,6 +1,6 @@
 <?php
 //See https://github.com/jrk/passfs/blob/master/opts.c for the C equivalent of this file
-dl("fuse.so");
+if (!extension_loaded("fuse")) dl("fuse.so");
 error_reporting(E_ALL);
 class Sample4Fuse extends Fuse {
  

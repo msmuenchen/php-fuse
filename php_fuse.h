@@ -49,6 +49,10 @@ extern "C" {
 #include <pthread.h>
 #include <fuse.h>
 
+#ifdef ZTS
+#include "TSRM.h"
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -58,12 +62,11 @@ typedef struct _php_fuse_object {
 	zend_object		zo;
 } php_fuse_object;
 
-pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
-
 ZEND_BEGIN_MODULE_GLOBALS(fuse)
 	zval			*active_object;
 	zend_fcall_info proc_fci;
 	zend_fcall_info_cache proc_fcic;
+	pthread_mutex_t m;
 ZEND_END_MODULE_GLOBALS(fuse)
 
 extern zend_module_entry fuse_module_entry;
@@ -76,14 +79,8 @@ extern zend_module_entry fuse_module_entry;
 #endif
 
 PHP_MINIT_FUNCTION(fuse);
-PHP_MSHUTDOWN_FUNCTION(fuse);
 PHP_RINIT_FUNCTION(fuse);
-PHP_RSHUTDOWN_FUNCTION(fuse);
 PHP_MINFO_FUNCTION(fuse);
-
-#ifdef ZTS
-#include "TSRM.h"
-#endif
 
 #define FREE_RESOURCE(resource) zend_list_delete(Z_LVAL_P(resource))
 
