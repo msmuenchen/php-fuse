@@ -9,6 +9,7 @@ class Sample4Fuse extends Fuse {
   //The enum at line 27, as PHP doesn't know enums, use $i as hack
   //Do not forget $i++, else opt_parse will whine.
   $i=0;
+  
   $this->argopt_keys=array("KEY_STATS"=>$i++,
                      "KEY_HELP"=>$i++,
                      "KEY_FUSE_HELP"=>$i++,
@@ -39,7 +40,7 @@ class Sample4Fuse extends Fuse {
  }
  public function main($argc,$argv) {   
   printf("argc is %d, argv is ('%s')\n",$argc,implode("', '",$argv));
-  $res=$this->opt_parse($argc,$argv,$this->dataopts,$this->argopts,array($this,"opt_proc"));
+  $res=$this->opt_parse($argv,$this->dataopts,$this->argopts,array($this,"opt_proc"));
   if($res===false) {
     printf("Error in opt_parse\n");
     exit;
