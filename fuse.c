@@ -1587,14 +1587,14 @@ static PHP_METHOD(Fuse, mount) {
 	for(zend_hash_internal_pointer_reset_ex(opthash, &optptr); zend_hash_get_current_data_ex(opthash, (void**) &data, &optptr) == SUCCESS; zend_hash_move_forward_ex(opthash, &optptr)) {
 		j++;
 		char* key;
-		int key_len;
-		long index;
+		uint key_len;
+		ulong index;
 		
 		//resulting element
 		char* element;
 		int elsize;
 		
-		int valtype=Z_TYPE_PP(data);
+		zend_uint valtype=Z_TYPE_PP(data);
 		
 		if (Z_TYPE_PP(data) != IS_STRING) { //element is not a string, convert instead
 			zend_error(E_WARNING,"Fuse.mount: Option %d is not a string, but type %d instead. Converting silently.",j,Z_TYPE_PP(data));
@@ -1782,7 +1782,7 @@ PHP_FUSE_API int php_fuse_opt_parse_proc(void* data, const char* arg, int key, s
 		arg_argv_hash=Z_ARRVAL_P(arg_argv);
 		arg_argv_size=zend_hash_num_elements(arg_argv_hash);
 		if(arg_argv_size!=Z_LVAL_P(arg_argc))
-			php_error(E_ERROR,"php_fuse_opt_parse_proc: size mismatch in modified argc=%d/sizeof(argv)=%d",Z_LVAL_P(arg_argc),arg_argv_size);
+			php_error(E_ERROR,"php_fuse_opt_parse_proc: size mismatch in modified argc=%li/sizeof(argv)=%i",Z_LVAL_P(arg_argc),arg_argv_size);
 		i=0;
 		for(zend_hash_internal_pointer_reset_ex(arg_argv_hash, &arg_argv_ptr); zend_hash_get_current_data_ex(arg_argv_hash, (void**) &d, &arg_argv_ptr) == SUCCESS; zend_hash_move_forward_ex(arg_argv_hash, &arg_argv_ptr)) {
 			if(Z_TYPE_PP(d)!=IS_STRING) {
@@ -1851,8 +1851,8 @@ static PHP_METHOD(Fuse, opt_parse) {
 	av_size=zend_hash_num_elements(av_hash);
 	
 	if(ac!=av_size) {
-		php_error(E_ERROR,"Fuse.args_init: argc/sizeof(argv) mismatch: argc is %d, sizeof(argv) is %d",ac,av_size);
-		RETURN_FAILURE();
+		php_error(E_ERROR,"Fuse.args_init: argc/sizeof(argv) mismatch: argc is %ld, sizeof(argv) is %d",ac,av_size);
+		RETURN_FALSE;
 	}
 	if(ac==0) {
 		php_error(E_NOTICE,"Fuse.args_init: argv is empty");
@@ -1882,11 +1882,11 @@ static PHP_METHOD(Fuse, opt_parse) {
 	struct fuse_opt* fopts=safe_emalloc(sizeof(struct fuse_opt),opts_size+1,0);
 	memset(fopts,0,(sizeof(struct fuse_opt)*(opts_size+1)));
 	i=0;
-	php_printf("walking through %d opts, assigned %d bytes of RAM for %d bytes wide struct\n",opts_size,(sizeof(struct fuse_opt)*(opts_size+1)),sizeof(struct fuse_opt));
+	php_printf("walking through %d opts, assigned %li bytes of RAM for %li bytes wide struct\n",opts_size,(sizeof(struct fuse_opt)*(opts_size+1)),sizeof(struct fuse_opt));
 	for(zend_hash_internal_pointer_reset_ex(opts_hash, &opts_ptr); zend_hash_get_current_data_ex(opts_hash, (void**) &d, &opts_ptr) == SUCCESS; zend_hash_move_forward_ex(opts_hash, &opts_ptr)) {
 		char* key;
-		int key_len;
-		long index;
+		uint key_len;
+		ulong index;
 		if(Z_TYPE_PP(d)!=IS_LONG)
 			php_error(E_ERROR,"Value of element %d is not an integer",i);
 		if(zend_hash_get_current_key_ex(opts_hash, &key, &key_len, &index, 0, &opts_ptr) != HASH_KEY_IS_STRING)

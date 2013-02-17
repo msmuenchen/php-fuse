@@ -29,16 +29,6 @@ if test "$PHP_FUSE" != "no"; then
   PHP_ADD_INCLUDE($PHP_FUSE_DIR/include)
   export OLD_CPPFLAGS="$CPPFLAGS"
   export CPPFLAGS="$CPPFLAGS $INCLUDES -DHAVE_FUSE"
-
-  AC_MSG_CHECKING(PHP version)
-  AC_TRY_COMPILE([#include <php_version.h>], [
-#if PHP_VERSION_ID < 50200
-#error  this extension requires at least PHP version 5.2.0
-#endif
-],
-[AC_MSG_RESULT(ok)],
-[AC_MSG_ERROR([need at least PHP 4.0.0])])
-
   export CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
   AC_CHECK_HEADER([fuse.h], [], AC_MSG_ERROR('fuse.h' header not found))
   export CPPFLAGS="$OLD_CPPFLAGS"
